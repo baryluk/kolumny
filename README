@@ -1,0 +1,208 @@
+kolumny - multifile column oriented line processing engine
+Author: Witold Baryluk, 2010, Copyright, BSD license
+Version: 1.0, 2010-05-13
+
+Usage: kolumny [options]... inputspec...
+
+options:
+	--begin python-code
+	       : execute Python code after startup
+	--end python-code
+	       : execute Python code at shutdown
+	--gnuplot_begin gnuplot-code
+	       : execute gnuplot code after startup
+	--fit fit-expression
+	       : perform simplified internal fiting (linear, with weights)
+	--gnuplot_plot gnuplot-plot-expressions
+	       : plot using gnuplot
+	--gnuplot_fit gnuplot-fit-expressions
+	       : fit usign gnuplot
+	--tmpdir path
+	       : use path as temporary directory if needed
+	--
+	       : end options processing here
+
+inputspec - one of:
+	filespec [skip N] [using usingspec]
+	":expression"
+
+filespec - one of:
+	"filepath"       : named file
+	"-"              : standard input
+	"<shell command" : spawn /bin/sh with given command and read stdout
+	                   (this can be multiple commands seprated using ';'
+	                    or any pipe constructed using | character).
+	                    Note: remember about shell escaping rules.
+	""               : file from previous inputspec
+	
+	Note: filepath cannot begin with -, <, #, : or confilict
+	      with any keyword like u, using, skip, s.
+
+First element of inputspec (filespec or :expression) can be prefixed
+with "#" to disable semantic processing of this file. It will
+be not opened, readed, calculated or evaluated in any means.
+Still given inputspec need to be syntactically correct.
+
+skip N:           (can be abbrevited to s)
+	N - positive integer number of first lines to skip from input
+
+using usingspec:  (can be abbrevited to u)
+	usingspec of the form:
+		u1[,u2][,u3]...
+	
+	Each u of the form:
+		[[~]varname:=]columnsspec
+	
+	Where
+	
+	columnspec one of the form:
+		N       : positive integer indicating single column number
+		          counting from 1
+		L...R   : pair of positive integers indicating vector of
+		          columns. L marks first column, R last, inclusive.
+		          Note that when using later varname for referencing
+		          vector's elements L column will be at index 0,
+		          L+1 at index 1, etc (just like Python's arrays).
+		(pexpr) : where pexpr is any Python expression. column(x)
+		          and valid(x) functions can be used to retrive
+		          x'th column (counting from 1), or check if it
+		          is valid column number and value there is float.
+		          x needs to be expression evaluating to positive
+		          integer.
+	
+	varname : unique variable name to store scalar or vector value.
+	          It will be converted to floats. In case of
+	          Python expression it will store value of this
+	          expression. varname should be valid Python identifier.
+	
+	~       : do not print, only store value in variable varname
+	          for further reference.
+
+:expression of the form:
+	:[~][varname:=]pexpr
+	
+	Where
+	
+	pexpr     : any Python expression to evaluate, and print.
+	
+	varname   : uniqe variable name to store value of pexpr.
+	            varname should be valid Python identifier.
+	
+	~         : do not print pexpr value as a column
+
+Remark: All inputspec (both filespec and :expressions) entries can be
+        intermixed in any order, even in case of forward references of
+        variable names. Some options can also be presented in any order,
+        but relative order of some options is important (for example
+        multiple --begin options will be excuted in given order).
+
+Note: Remember to escape shell meta-characters so they
+      will not be interpreted, by your shell.
+
+Examples:
+
+kolumny "file1"
+
+	Will output all columns from file "file1", but will
+	ensure they are floats.
+
+kolumny "file1" using 1,4
+
+	Will output 2 columns: column 1 and 4 from file "file1"
+
+kolumny "file1" using 1,~c:=2...8 \
+	":sum(c)"
+
+	Will output 2 columns: column 1 from file "file1",
+	and sum of values in columns 2...8.
+
+kolumny \
+	"file1" using a:=1,~c:=3...7 \
+	"file2" s 11 u ~b:=1,d:=2 \
+	"#file3" skip 21 using ~e:=1,g:=2 \
+	"<generate_file.py 44 1.41 | egrep -v '^$'" skip 11 \
+		using h:=4,~cg:=1 \
+	":~check(a==b)" \
+	"#:~check(a==e)" \
+	":~check(a==cg)" \
+	":~check(a==x)" \
+	":S:=sum(c)" \
+	":d+g*h" \
+	":sqrt(d)-c[3]*S" \
+	"file4" skip 11 u ~x:=1,~y:=2,z:=4 \
+	":check(S >= 10)" \
+	":'somestring'" \
+	":1e3*xy" \
+	":4,5,b" \
+	":4,5,c" \
+	":~xy:=x+y" \
+	"file4" skip 11 u 3
+
+	Will output lines of the form:
+		a d h S=sum(c) d+g+h sqrt(d)-c[3]*S z True/False \
+		  somestring xy*1e3=1000*(x+y) (4,5,b) \
+		  (4,5,[c1,...]) 3rd-column-of-file4
+
+	Note:
+		- multiple columns read at once
+		- forward reference of variable "x" in check(a==x).
+		- comments using '#'
+		- python expressions, including math operations,
+		  checks, tuple/array printing
+		- not printed columns using ~ both in python
+		  expressions and file inputs
+		- vector columns like c:=3...7.
+		  c[3] means 3+3=6th column from "file1"
+		- usage of subcommands to generate data
+		  and remove empty lines using grep
+		- usage of the same file multiple times
+
+kolumny \
+	--begin 'maximum1=float("-inf")' \
+	--begin 'maximum2=float("-inf")' \
+	"file1" using 1,v1:=4,~v2:=5 \
+	":maximum1=max(maximum1,v1)" \
+	":~maximum2=max(maximum2,v2)" \
+	--end   'print "MAX: %f %f" % (maximum1, maximum2)'
+
+	Will output 3 columns from file "file1" (column 1, 2
+	and accumulated maximal value of column 4).
+	At the end it will additionally print maximal values
+	of the 4th and 5th column.
+
+kolumny \
+	--gnuplot_begin 'set terminal png' \
+	--gnuplot1_begin 'set output "chart1.png"' \
+	--gnuplot2_begin 'set output "chart2.png"' \
+	--gnuplot_begin 'f(x) = k1*x + k2' \
+	--gnuplot_begin 'g(x) = A*x + B' \
+	"file1" using y1a:=3,y2a:=4,~xa:=1 \
+	"file2" using y1b:=3,y2b:=4,xb:=1 \
+	":~check(xa==xb)" \
+	":diff1=y1a-y1b" \
+	":diff2=y2a-y2b" \
+	--gnuplot1_fit ":xa,y1"     'f(x)" via "k1,k2" \
+	--gnuplot2_fit ":xa,diff1"  'g(x)" via "A,B" \
+	--gnuplot1_plot "f(x)" ":xa,y2b" ":xa,y1a" ";" \
+	--gnuplot2_plot ":xa,diff2" title "Data2" "g(x)" title 'Fit2' ";" \
+	--end 'print "A: %f  B: %f " % (A, B)'
+	
+	Perform some fiting and ploting on multiple files.
+
+kolumny "file.dat" using 1,(column(2)+column(3)+column(4))
+
+	Display 2 columns: 1st same as input, 2nd being
+	a sum of column 2, 3 and 4 from input.
+
+kolumny "file.dat" using 1,~c=2...4 \
+	":c[2-2]+c[3-2]+c[4-2]"
+
+	Same as above.
+
+kolumny ":x:=3" ":y+x*100" ":y:=4*z" ":z:=100000"
+
+	Use as small spreadsheet.
+	Note that only one line will be printed, and
+	expressions can be provided in any order.
+
+Report bug to baryluk at smp.if.uj.edu.pl
