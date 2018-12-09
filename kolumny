@@ -82,7 +82,8 @@ using usingspec:  (can be abbrevited to u)
 		          x'th column (counting from 1), or check if it
 		          is valid column number and value there is float.
 		          x needs to be expression evaluating to positive
-		          integer.
+		          integer. column(0) returns line number of the file
+		          the being processed file (ignores skip).
 	
 	varname : unique variable name to store scalar or vector value.
 	          It will be converted to floats. In case of
@@ -601,9 +602,16 @@ def go():
 													return False
 											except:
 												return False
+										def column_function(x):
+											if x == 0:
+												return line_number
+											else:
+												if x > len(l):
+													raise NameError("trying to access invalid column number %d in file '%s' line %d, only %d columns available" % (x, a["file_name"], a["current_line_number"], len(l)))
+												return float(l[x-1])
 										available_locals = {
-											"column": lambda x: float(l[x-1]),
-											"valid": is_valid_float
+											"column": column_function,
+											"valid": is_valid_float,
 										}
 										try:
 											v = eval(c, globals(), available_locals)
@@ -682,9 +690,16 @@ def go():
 														return False
 												except:
 													return False
+											def column_function(x):
+												if x == 0:
+													return line_number
+												else:
+													if x > len(l):
+														raise NameError("trying to access invalid column number %d in file '%s' line %d, only %d columns available" % (x, a["file_name"], a["current_line_number"], len(l)))
+													return float(l[x-1])
 											available_locals = {
-												"column": lambda x: float(l[x-1]),
-												"valid": is_valid_float
+												"column": column_function,
+												"valid": is_valid_float,
 											}
 											try:
 												v = eval(c, globals(), available_locals)
