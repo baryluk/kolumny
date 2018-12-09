@@ -343,13 +343,13 @@ if len(arguments) == 1:
 	print usage
 	raise NameError("invalid arguments")
 
+prev_filename = None
 while argument_i < len(arguments):
 	e = arguments[argument_i]
 	argument_i += 1
 	action = {}
 	commented = False
-	# TODO: support file name "" (previous file)
-	if e[0] == '#':
+	if len(e) >= 1 and e[0] == '#':
 		commented = True
 		e = e[1:]
 	action["commented"] = commented
@@ -362,7 +362,7 @@ while argument_i < len(arguments):
 		e = arguments[argument_i]
 		argument_i += 1
 		__import__(e)
-	elif e[0] == ':':
+	elif len(e) >= 1 and e[0] == ':':
 		action["type"] = "expression"
 		e = e[1:]
 		not_print = False
@@ -392,7 +392,15 @@ while argument_i < len(arguments):
 			argument_i += 1
 	else:
 		action["type"] = "file"
-		action["file_name"] = e # TODO: allow "" for shortcut for previously used filename
+		if e == "":
+			e = prev_filename
+		prev_filename = e
+		if e == None:
+			raise NameError("empty input file name used, and no previous real file name define")
+		if e == "":
+			raise NameError("empty input file name used")
+		# TODO(baryluk): Still need to define what happens when we have commented previous file.
+		action["file_name"] = e
 		number_of_files += 1
 		plik = None
 		if e[0] == '<':
