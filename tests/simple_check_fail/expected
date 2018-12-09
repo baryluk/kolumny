@@ -1,0 +1,10 @@
+Exception occured when processing output line 1 at phase2, pass number 1: '('check(x > y)',)'
+Traceback (most recent call last):
+  File "../../kolumny", line xxx, in <module>
+    for row in kk:
+  File "../../kolumny", line xxx, in go
+    v = eval(expr, globals(), current_variables)
+  File "<string>", line 1, in <module>
+  File "../../kolumny", line xxx, in check
+    assert cond
+AssertionError

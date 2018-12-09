@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "../../kolumny", line xxx, in <module>
+    c_right = int(c_right)
+ValueError: invalid literal for int() with base 10: ''

@@ -1,0 +1,2 @@
+../../kolumny: Error when procesing file '../input1.txt' line 1 in phase2
+../../kolumny: Used using [{'variable': None, 'type': 'vector', 'columns': (5, 6), 'not_print': False}]

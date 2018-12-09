@@ -1,0 +1,7 @@
+Unresolved dependency in expression 'a+b'
+Traceback (most recent call last):
+  File "../../kolumny", line xxx, in <module>
+    for row in kk:
+  File "../../kolumny", line xxx, in go
+    raise NameError("unresolved dependencies in variable")
+NameError: unresolved dependencies in variable

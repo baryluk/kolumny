@@ -1,0 +1,1 @@
+${KOLUMNY} "../input1.txt" u ~t:=1,~x:=2,~y:=3 :t :x :y ":~check(x > y)"

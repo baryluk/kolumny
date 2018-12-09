@@ -1,0 +1,1 @@
+${KOLUMNY} "../input1.txt" u ~x:=2,~y:=3 "#:check(False)" "#:nonsense" "#:x" ":y" "#:sqrt(x*y)"

@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "../../kolumny", line xxx, in <module>
+    raise NameError("error in columns spec, first column cant be after last column used")
+NameError: error in columns spec, first column cant be after last column used
