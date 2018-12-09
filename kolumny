@@ -365,6 +365,10 @@ while argument_i < len(arguments):
 		else:
 			raise NameError("at most one ':=' allowed in expression. '%s'" % (e))
 		action["expression_p"] = e
+		if (argument_i < len(arguments)) and (arguments[argument_i] == "title"):
+			argument_i += 1
+			action["title"] = arguments[argument_i]
+			argument_i += 1
 	else:
 		action["type"] = "file"
 		action["file_name"] = e # TODO: allow "" for shortcut for previously used filename
@@ -398,6 +402,7 @@ while argument_i < len(arguments):
 		using = None
 		using2 = None
 		have_skip = False
+		have_title = False
 		skip = None
 		used = None
 		while argument_i < len(arguments):
@@ -496,6 +501,13 @@ while argument_i < len(arguments):
 							raise NameError("only zero or one '...' in columns spec allowed")
 					variables[var] = {"file": plik, "type": typ, "column": cc}
 					used.append({"variable": var, "not_print": not_print, "type": typ, "columns": cc})
+			elif next == "t" or next == "title":
+				argument_i += 1
+				if have_title:
+					raise NameError("at most one 'title' allowed")
+				have_title = True
+				title = arguments[argument_i]
+				argument_i += 1
 			elif next == "s" or next == "skip":
 				argument_i += 1
 				if have_skip:
@@ -523,6 +535,8 @@ while argument_i < len(arguments):
 		action["using"] = using
 		action["used"] = used
 		action["skip"] = skip
+		if have_title:
+			action["title"] = title
 		action["processed_lines"] = 0
 		if skip:
 			action["current_line_number"] = skip
