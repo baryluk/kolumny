@@ -20,9 +20,14 @@ do
   fi
   KOLUMNY=../../kolumny sh command 2>&1 | sed -E -e 's|File "([^"]+kolumny)", line [0-9]+, in|File "\1", line xxx, in|' > actual
   if ! diff -Nu expected actual >/dev/null 2>/dev/null; then
-    echo "$t - Test FAIL. Differences detected:"
-    diff -Nu expected actual
+    echo "$t - Test FAIL."
     echo
+    echo "Test command:"
+    cat command
+    echo
+    echo "Differences detected:"
+    diff -Nu expected actual
+    echo "--------------------------------------------------------------------------------"
     FAIL=$((FAIL+1))
   else
     echo "$t - Test PASS."
