@@ -23,24 +23,12 @@ options:
 	       : use path as temporary directory if needed
 	--
 	       : end options processing here
-TODO:
-	--header
-	--latex_tabular
-	--global-skip N
-	--global-grep eregexp
-	--global-grep-v eregexp
-	--global-sed sed-expression
-	--progress-bar
-	--global-every N
-	--output-field-separator string
-	--global-input-field-separator -F regexp
-	--check columns
 
-inputspec - one of:
-	filespec [skip N] [using usingspec]
+inputspec: one of:
+	filespec [skip N] [using USINGSPEC]
 	":expression"
 
-filespec - one of:
+filespec: one of:
 	"filepath"       : named file
 	"-"              : standard input
 	"<shell command" : spawn /bin/sh with given command and read stdout
@@ -50,26 +38,30 @@ filespec - one of:
 	""               : file from previous inputspec
 	
 	Note: filepath cannot begin with -, <, #, : or confilict
-	      with any keyword like u, using, skip, s.
+	      with any keyword like u, using, skip and s.
 
-First element of inputspec (filespec or :expression) can be prefixed
-with "#" to disable semantic processing of this file. It will
-be not opened, readed, calculated or evaluated in any means.
-Still given inputspec need to be syntactically correct.
+First element of inputspec (filespec or :expression) can be prefixed with
+"#" to disable semantic processing of this file. It will be not opened,
+readed, calculated or evaluated in any means. Still given inputspec need
+to be syntactically correct.
 
 skip N:           (can be abbrevited to s)
 	N - positive integer number of first lines to skip from input
 
-using usingspec:  (can be abbrevited to u)
-	usingspec of the form:
+using USINGSPEC:  (can be abbrevited to u)
+	USINGSPEC of the form:
 		u1[,u2][,u3]...
 	
 	Each u of the form:
 		[[~]varname:=]columnsspec
 	
-	Where
-	
-	columnspec one of the form:
+	~       : do not print, only store value in variable varname
+	          for further reference.
+	varname : unique variable name to store scalar or vector value.
+	          It will be converted to floats. In case of
+	          Python expression it will store value of this
+	          expression. varname should be valid Python identifier.
+	columnspec: One of:
 		N       : positive integer indicating single column number
 		          counting from 1
 		L...R   : pair of positive integers indicating vector of
@@ -82,145 +74,17 @@ using usingspec:  (can be abbrevited to u)
 		          x'th column (counting from 1), or check if it
 		          is valid column number and value there is float.
 		          x needs to be expression evaluating to positive
-		          integer. column(0) returns line number of the file
-		          the being processed file (ignores skip).
+		          integer.
 	
-	varname : unique variable name to store scalar or vector value.
-	          It will be converted to floats. In case of
-	          Python expression it will store value of this
-	          expression. varname should be valid Python identifier.
-	
-	~       : do not print, only store value in variable varname
-	          for further reference.
 
 :expression of the form:
 	:[~][varname:=]pexpr
 	
-	Where
-	
-	pexpr     : any Python expression to evaluate, and print.
-	
-	varname   : uniqe variable name to store value of pexpr.
-	            varname should be valid Python identifier.
-	
-	~         : do not print pexpr value as a column
-
-Remark: All inputspec (both filespec and :expressions) entries can be
-        intermixed in any order, even in case of forward references of
-        variable names. Some options can also be presented in any order,
-        but relative order of some options is important (for example
-        multiple --begin options will be excuted in given order).
-
-Note: Remember to escape shell meta-characters so they
-      will not be interpreted, by your shell.
-
-Examples:
-
-kolumny "file1"
-
-	Will output all columns from file "file1", but will
-	ensure they are floats.
-
-kolumny "file1" using 1,4
-
-	Will output 2 columns: column 1 and 4 from file "file1"
-
-kolumny "file1" using 1,~c:=2...8 \\
-	":sum(c)"
-
-	Will output 2 columns: column 1 from file "file1",
-	and sum of values in columns 2...8.
-
-kolumny \\
-	"file1" using a:=1,~c:=3...7 \\
-	"file2" s 11 u ~b:=1,d:=2 \\
-	"#file3" skip 21 using ~e:=1,g:=2 \\
-	"<generate_file.py 44 1.41 | egrep -v '^$'" skip 11 \\
-		using h:=4,~cg:=1 \\
-	":~check(a==b)" \\
-	"#:~check(a==e)" \\
-	":~check(a==cg)" \\
-	":~check(a==x)" \\
-	":S:=sum(c)" \\
-	":d+g*h" \\
-	":sqrt(d)-c[3]*S" \\
-	"file4" skip 11 u ~x:=1,~y:=2,z:=4 \\
-	":check(S >= 10)" \\
-	":'somestring'" \\
-	":1e3*xy" \\
-	":4,5,b" \\
-	":4,5,c" \\
-	":~xy:=x+y" \\
-	"file4" skip 11 u 3
-
-	Will output lines of the form:
-		a d h S=sum(c) d+g+h sqrt(d)-c[3]*S z True/False \\
-		  somestring xy*1e3=1000*(x+y) (4,5,b) \\
-		  (4,5,[c1,...]) 3rd-column-of-file4
-
-	Note:
-		- multiple columns read at once
-		- forward reference of variable "x" in check(a==x).
-		- comments using '#'
-		- python expressions, including math operations,
-		  checks, tuple/array printing
-		- not printed columns using ~ both in python
-		  expressions and file inputs
-		- vector columns like c:=3...7.
-		  c[3] means 3+3=6th column from "file1"
-		- usage of subcommands to generate data
-		  and remove empty lines using grep
-		- usage of the same file multiple times
-
-kolumny \\
-	--begin 'maximum1=float("-inf")' \\
-	--begin 'maximum2=float("-inf")' \\
-	"file1" using 1,v1:=4,~v2:=5 \\
-	":maximum1=max(maximum1,v1)" \\
-	":~maximum2=max(maximum2,v2)" \\
-	--end   'print "MAX: %f %f" % (maximum1, maximum2)'
-
-	Will output 3 columns from file "file1" (column 1, 2
-	and accumulated maximal value of column 4).
-	At the end it will additionally print maximal values
-	of the 4th and 5th column.
-
-kolumny \\
-	--gnuplot_begin 'set terminal png' \\
-	--gnuplot1_begin 'set output "chart1.png"' \\
-	--gnuplot2_begin 'set output "chart2.png"' \\
-	--gnuplot_begin 'f(x) = k1*x + k2' \\
-	--gnuplot_begin 'g(x) = A*x + B' \\
-	"file1" using y1a:=3,y2a:=4,~xa:=1 \\
-	"file2" using y1b:=3,y2b:=4,xb:=1 \\
-	":~check(xa==xb)" \\
-	":diff1=y1a-y1b" \\
-	":diff2=y2a-y2b" \\
-	--gnuplot1_fit ":xa,y1"     'f(x)" via "k1,k2" \\
-	--gnuplot2_fit ":xa,diff1"  'g(x)" via "A,B" \\
-	--gnuplot1_plot "f(x)" ":xa,y2b" ":xa,y1a" ";" \\
-	--gnuplot2_plot ":xa,diff2" title "Data2" "g(x)" title 'Fit2' ";" \\
-	--end 'print "A: %f  B: %f " % (A, B)'
-	
-	Perform some fiting and ploting on multiple files.
-
-kolumny "file.dat" using 1,(column(2)+column(3)+column(4))
-
-	Display 2 columns: 1st same as input, 2nd being
-	a sum of column 2, 3 and 4 from input.
-
-kolumny "file.dat" using 1,~c=2...4 \\
-	":c[2-2]+c[3-2]+c[4-2]"
-
-	Same as above.
-
-kolumny ":x:=3" ":y+x*100" ":y:=4*z" ":z:=100000"
-
-	Use as small spreadsheet.
-	Note that only one line will be printed, and
-	expressions can be provided in any order.
-
-Report bug to <baryluk@smp.if.uj.edu.pl>.
+	Where:
+		~         : do not print pexpr value as a column
+		varname   : uniqe variable name to store value of pexpr.
+		            varname should be valid Python identifier.
+		pexpr     : any Python expression to evaluate.
 """
 
 import sys
@@ -248,83 +112,6 @@ def stddev(l):
 	s = sum(map(lambda x: (x - m)**2, l)) / (len(l)-1)
 	return sqrt(s)
 
-
-# TODO:
-#   "" as previous file
-#   multiple "-" allowed
-#   scanf like format for using (like in gnuplot)
-#   different skips for the same file (also "" and "-"
-#   negative skip in skip keyword (per file and --global-skip)
-#   negative columns in using (per file, and in --global-check)
-#   every keyword (per file)
-#   grep, sed  keyword (multiple times) (per file and --global-regexp*)
-#   input-field-separator keyword (per file)
-#   --fit with and without weight, and with errors (initially only linear fiting, then lineary dependend fitting)
-#    then functions of coefficients
-#  --header to add automatically header with variable names
-#  --latex_tabular to generate latex table with header, etc.  (like in data2tex.pl)
-#  --gnuplot*
-#  support expressions in using like in latex:    x:=($3-$1),   probably better: x:=(l[3]-l[1])
-#  --global-skip 19
-#  --global-regexp 'FLOAT\s*FLOAT\*FLOAT'        # with predefined macros
-#  --global-regexp-v '^\s*(#|$)'
-#  --global-check 1,3            # means check 1st and 3rd column in each input file, and assert they are equal
-#  --output-field-separator
-#  --global-input-field-separator
-
-"""
-	Example
-
-	--begin 'vec_diff = lambda a,b: map(lambda (x,y): x-y, zip(a,b))'
-	--begin 'maximum = float("-inf")'
-	--end 'print maximum'
-	--gnuplot_begin 'set terminal png'
-	--gnuplot_begin 'set output "plik.png"'
-	--gnuplot_begin 'f(x) = k1*x + k2'
-	--fit 'a=k1*b+k2'
-	--fit 'a \pm a_err = k1 * b \pm b_err + k2'
-	--fit 'log(a \pm a_err) = log(k1) * (b \pm b_err)**4 + k2*k2'    // detect that a and b are existing values
-												// they need to be on different sides of expression
-												// find biggest subexpressions without other unknown variables
-												// one of the biggest subexpressions need be entire one side
-												// then it must by of the for:   S1 = S2 * A  + B    (1)
-												// where A and B are some expressions with exactly one unknown variable
-												// find linear fit for (1)
-												// inverse expressions for A and B for unknown variables k1, k2
-												// calculate derivatives and calculate errors for k1, k2.
-																
-	--gnuplot_fit 'a:b f(x) via k1,k2'
-	--gnuplot_plot 'a:b, c:d'
-	"./100324 - Delta - bufor#001.txt" u ~a:=1...8,b:=10...15 \
-	"./100324 - Delta - bufor#005.txt" u a1:=1...8 \
-	"#./100324 - Delta - bufor#005.txt" u a1:=1...8 \
-	"#./100324 - Delta - bufor#006.txt" u a2:=1...8 \
-	"<echo 1 2; echo 2 3; echo 6 10" u 2 \
-	"#<echo 1 2; echo 2 3; echo 6 10" u 2 \
-	"./100324 - Delta - bufor#001.txt" skip 19 u c1=1,f1=2 \
-	"./100324 - Delta - bufor#001.txt" u 3 \
-	"-" u 3 \
-	"-" skip 5 u 6 \
-	"./100324 - Delta#003.txt" skip 19 u c2:=1,f2:=2 \
-	"./100324 - Delta_HIV#002.txt" skip 19 u f4:=2 \
-	"" u 3 \
-	"./100324 - Delta_AAV-60#006.txt" skip 19 u 'f7:=(3+column(2)*column(3))' \
-	"./100324 - Delta_AAV-60#006.txt" skip 19 u '~f7temp:=2' \
-	":f7:=3+f7temp'\
-	":f2-f1" \
-	":f7-f1" \
-	":a[3]-a[2]" \
-	":sum(a)" \
-	":vec_sum(a1,a2)" \
-	":avg(a)" \
-	":stddev(a)" \
-	":~p:=f5-f1" \
-	":p" \
-	":r*2.0" \
-	":r:=f5-f1" \
-	":maximum:=max(maximum,r)"
-	":~check(c1 == c2 == c3)"
-"""
 
 files = []
 variables = {}
@@ -448,33 +235,6 @@ while argument_i < len(arguments):
 				using = using.split(",")
 				used = []
 				for u in using:
-					"""
-						4
-						($3-412)  # expression: not supported, not neeed
-						-5 # 5th column from right: not supported
-						1...10 # columns 1...10
-						6...-1   # columns 6,7,....,last_columnt
-
-					this can be prefix with:
-
-						v:=     # assign to v, and print
-						~v:=    # assign to v, and not print
-
-					for example
-
-						v:=4
-						v:=($3-412)  # expression: not supported, not neeed
-						v:=-5 # 5th column from right: not supported
-						v:=1...10 # columns 1...10    # vector
-						v:=6...-1   # columns 6,7,....,last_columnt : not supported     # vector
-
-						~v:=4
-						~v:=($3-412)  # expression: not supported, not neeed
-						~v:=-5 # 5th column from right: not supported
-						~v:=1...10 # columns 1...10    # vector
-						~v:=6...-1   # columns 6,7,....,last_columnt: not supported   # vector
-
-					"""
 					if len(u) == 0:
 						raise NameError("empty specifier not allowed")
 					u = u.split(":=")

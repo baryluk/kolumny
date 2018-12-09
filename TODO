@@ -1,0 +1,115 @@
+TODO:
+	--header
+	--latex_tabular
+	--global-skip N
+	--global-grep eregexp
+	--global-grep-v eregexp
+	--global-sed sed-expression
+	--progress-bar
+	--global-every N
+	--output-field-separator string
+	--global-input-field-separator -F regexp
+	--check columns
+
+
+# TODO:
+#   multiple "-" allowed
+#   scanf like format for using (like in gnuplot)
+#   different skips for the same file (also "" and "-")
+#   negative skip in skip keyword (per file and --global-skip)
+#   negative columns in using (per file, and in --global-check)
+#   every keyword (per file)
+#   grep, sed  keyword (multiple times) (per file and --global-regexp*)
+#   input-field-separator keyword (per file)
+#   --fit with and without weight, and with errors (initially only linear fiting, then lineary dependend fitting)
+#    then functions of coefficients
+#  --header to add automatically header with variable names
+#  --latex_tabular to generate latex table with header, etc.  (like in data2tex.pl)
+#  --gnuplot*
+#  support expressions in using like in latex:    x:=($3-$1),   probably better: x:=(l[3]-l[1])
+#  --global-skip 19
+#  --global-regexp 'FLOAT\s*FLOAT\*FLOAT'        # with predefined macros
+#  --global-regexp-v '^\s*(#|$)'
+#  --global-check 1,3            # means check 1st and 3rd column in each input file, and assert they are equal
+#  --output-field-separator
+#  --global-input-field-separator
+
+
+
+
+kolumny \
+"./*_linia_bazowa/*[135].dat.normalized" u ~dl[file]:=1,~wartosci[file]:=2 \
+":~check(same(dl))" \
+":int(first(dl))" \
+":sum(wartosci)/len(wartosci)"
+
+or u ~+dl:=1
+
+
+"<paste ./*_linia_bazowa/*[135].dat.normalized.col2" u ~wartosci:=1...-1  # w zasadzie dziala juz
+"<paste ./*_linia_bazowa/*[135].dat.normalized.col2" u ~wartosci:=1...length \
+"<paste ./*_linia_bazowa/*[135].dat.normalized.col2" u ~wartosci:=1... \
+"<paste ./*_linia_bazowa/*[135].dat.normalized.col2" u ~wartosci:=1,3... \
+
+
+
+:ignore_if(...)
+
+similar to check, but instead of crashing and stopping, it simply ignores
+the current line completly from processing (either as inputs to
+accumulating expression, plots, fits and printing).
+
+
+"""
+	Example
+
+	--begin 'vec_diff = lambda a,b: map(lambda (x,y): x-y, zip(a,b))'
+	--begin 'maximum = float("-inf")'
+	--end 'print maximum'
+	--gnuplot_begin 'set terminal png'
+	--gnuplot_begin 'set output "plik.png"'
+	--gnuplot_begin 'f(x) = k1*x + k2'
+	--fit 'a=k1*b+k2'
+	--fit 'a \pm a_err = k1 * b \pm b_err + k2'
+	--fit 'log(a \pm a_err) = log(k1) * (b \pm b_err)**4 + k2*k2'    // detect that a and b are existing values
+												// they need to be on different sides of expression
+												// find biggest subexpressions without other unknown variables
+												// one of the biggest subexpressions need be entire one side
+												// then it must by of the for:   S1 = S2 * A  + B    (1)
+												// where A and B are some expressions with exactly one unknown variable
+												// find linear fit for (1)
+												// inverse expressions for A and B for unknown variables k1, k2
+												// calculate derivatives and calculate errors for k1, k2.
+																
+	--gnuplot_fit 'a:b f(x) via k1,k2'
+	--gnuplot_plot 'a:b, c:d'
+	"./100324 - Delta - bufor#001.txt" u ~a:=1...8,b:=10...15 \
+	"./100324 - Delta - bufor#005.txt" u a1:=1...8 \
+	"#./100324 - Delta - bufor#005.txt" u a1:=1...8 \
+	"#./100324 - Delta - bufor#006.txt" u a2:=1...8 \
+	"<echo 1 2; echo 2 3; echo 6 10" u 2 \
+	"#<echo 1 2; echo 2 3; echo 6 10" u 2 \
+	"./100324 - Delta - bufor#001.txt" skip 19 u c1=1,f1=2 \
+	"./100324 - Delta - bufor#001.txt" u 3 \
+	"-" u 3 \
+	"-" skip 5 u 6 \
+	"./100324 - Delta#003.txt" skip 19 u c2:=1,f2:=2 \
+	"./100324 - Delta_HIV#002.txt" skip 19 u f4:=2 \
+	"" u 3 \
+	"./100324 - Delta_AAV-60#006.txt" skip 19 u 'f7:=(3+column(2)*column(3))' \
+	"./100324 - Delta_AAV-60#006.txt" skip 19 u '~f7temp:=2' \
+	":f7:=3+f7temp'\
+	":f2-f1" \
+	":f7-f1" \
+	":a[3]-a[2]" \
+	":sum(a)" \
+	":vec_sum(a1,a2)" \
+	":avg(a)" \
+	":stddev(a)" \
+	":~p:=f5-f1" \
+	":p" \
+	":r*2.0" \
+	":r:=f5-f1" \
+	":maximum:=max(maximum,r)"
+	":~check(c1 == c2 == c3)"
+"""
