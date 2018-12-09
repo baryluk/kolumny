@@ -229,14 +229,24 @@ from math import *
 import subprocess
 #import shlex
 
-vec_sum = lambda a,b: map(lambda (x,y): x+y, zip(a,b))
+vec_sum = lambda a, b: map(lambda (x,y): x + y, zip(a, b))
 
 def check(cond):
 	assert cond
 
-def eq(x,y):
-	# make it better
-	return ( abs(x-y)/(abs(x)+abs(y)) < 1.0e-14 )
+def eq(x, y):
+	# TODO(baryluk): Make it better.
+	return abs(x - y) / (abs(x) + abs(y)) < 1.0e-14
+
+def avg(l):
+	# TODO(baryluk): This is not the best method.
+	return sum(l) / len(l)
+
+def stddev(l):
+	m = avg(l)
+	# TODO(baryluk): This is not the best method.
+	s = sum(map(lambda x: (x - m)**2, l)) / (len(l)-1)
+	return sqrt(s)
 
 
 # TODO:
@@ -306,6 +316,8 @@ def eq(x,y):
 	":a[3]-a[2]" \
 	":sum(a)" \
 	":vec_sum(a1,a2)" \
+	":avg(a)" \
+	":stddev(a)" \
 	":~p:=f5-f1" \
 	":p" \
 	":r*2.0" \
