@@ -1,0 +1,8 @@
+already assigned variable 'x'
+Exception occured when processing output line 1 at phase2, pass number 1: '('x+1',)'
+Traceback (most recent call last):
+  File "../../kolumny", line xxx, in <module>
+    for row in kk:
+  File "../../kolumny", line xxx, in go
+    raise NameError("already assigned")
+NameError: already assigned
