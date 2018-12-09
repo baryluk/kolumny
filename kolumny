@@ -516,6 +516,7 @@ while argument_i < len(arguments):
 				skip = arguments[argument_i]
 				argument_i += 1
 				skip = int(skip)
+				# perform actuall skiping
 				if skip > 0:
 					if not commented:
 						i = 0
