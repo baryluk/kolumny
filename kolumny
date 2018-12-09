@@ -11,18 +11,6 @@ options:
 	       : execute Python code after startup
 	--end python-code
 	       : execute Python code at shutdown
-	--gnuplot_begin gnuplot-code
-	       : execute gnuplot code after startup
-	--fit fit-expression
-	       : perform simplified internal fiting (linear, with weights)
-	--gnuplot_plot gnuplot-plot-expressions
-	       : plot using gnuplot
-	--gnuplot_fit gnuplot-fit-expressions
-	       : fit usign gnuplot
-	--tmpdir path
-	       : use path as temporary directory if needed
-	--
-	       : end options processing here
 
 inputspec: one of:
 	filespec [skip N] [using USINGSPEC]
@@ -31,24 +19,13 @@ inputspec: one of:
 filespec: one of:
 	"filepath"       : named file
 	"-"              : standard input
-	"<shell command" : spawn /bin/sh with given command and read stdout
-	                   (this can be multiple commands seprated using ';'
-	                    or any pipe constructed using | character).
-	                    Note: remember about shell escaping rules.
-	""               : file from previous inputspec
-	
-	Note: filepath cannot begin with -, <, #, : or confilict
-	      with any keyword like u, using, skip and s.
+	"<command"       : spawn /bin/sh with given command and read stdout
+	""               : file from previous filespec
 
-First element of inputspec (filespec or :expression) can be prefixed with
-"#" to disable semantic processing of this file. It will be not opened,
-readed, calculated or evaluated in any means. Still given inputspec need
-to be syntactically correct.
-
-skip N:           (can be abbrevited to s)
+skip N | s N:
 	N - positive integer number of first lines to skip from input
 
-using USINGSPEC:  (can be abbrevited to u)
+using USINGSPEC | u USINGSPEC:
 	USINGSPEC of the form:
 		u1[,u2][,u3]...
 	
@@ -58,9 +35,7 @@ using USINGSPEC:  (can be abbrevited to u)
 	~       : do not print, only store value in variable varname
 	          for further reference.
 	varname : unique variable name to store scalar or vector value.
-	          It will be converted to floats. In case of
-	          Python expression it will store value of this
-	          expression. varname should be valid Python identifier.
+	          Data will be converted to floats.
 	columnspec: One of:
 		N       : positive integer indicating single column number
 		          counting from 1
@@ -75,7 +50,6 @@ using USINGSPEC:  (can be abbrevited to u)
 		          is valid column number and value there is float.
 		          x needs to be expression evaluating to positive
 		          integer.
-	
 
 :expression of the form:
 	:[~][varname:=]pexpr
@@ -85,6 +59,8 @@ using USINGSPEC:  (can be abbrevited to u)
 		varname   : uniqe variable name to store value of pexpr.
 		            varname should be valid Python identifier.
 		pexpr     : any Python expression to evaluate.
+
+Prefix inputspec with "#" to disable processing of file or expression.
 """
 
 import sys
