@@ -341,7 +341,15 @@ while argument_i < len(arguments):
 		e = e[1:]
 	action["commented"] = commented
 
-	if e[0] == ':':
+	if e == "--begin":
+		e = arguments[argument_i]
+		argument_i += 1
+		eval(e, globals())
+	elif e == "--import":
+		e = arguments[argument_i]
+		argument_i += 1
+		__import__(e)
+	elif e[0] == ':':
 		action["type"] = "expression"
 		e = e[1:]
 		not_print = False
