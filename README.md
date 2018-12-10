@@ -328,10 +328,10 @@ kolumny "file1" using 1,4
 Will output 2 columns: column 1 and 4 from file `file1`.
 
 ```
-kolumny "data.txt" u 1,3,4
+kolumny "data.txt" u 1,4,3,1
 ```
 
-Will output 3 columns: column 1, 3 and 4 from file `data.txt`.
+Will output 4 columns: column 1, 4, 3 and 1 (in this order) from file `data.txt`.
 
 In this respect it is similar to this usage of `awk`:
 
