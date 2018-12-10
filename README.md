@@ -1,7 +1,7 @@
 kolumny
 =======
 
-`kolumny` - multi-file column oriented line processing engine
+`kolumny` - declarative multi-file column oriented command line processing engine
 
 
 What is it?
