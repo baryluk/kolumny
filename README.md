@@ -636,7 +636,16 @@ kolumny "file.dat" using "column(1)"
 
 will not work and produce an error.
 
-Note: This behaviour is influenced by `gnuplot` `using` and `column` function.
+Note: Current `using` parser is rather primitive, so you can't use commas
+inside functions in `using` expressions:
+
+```
+kolumny "file.dat" using "(max(column(1), column(2))"
+```
+
+Will unfortunately not work.
+
+Note: A general behaviour of `column` is influenced by `gnuplot` `using` and `column` function.
 
 
 ### `column(0)` function
