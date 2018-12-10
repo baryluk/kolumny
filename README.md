@@ -834,7 +834,6 @@ Will run a Unix `tr` command to convert commas into spaces, and then output
 columns 1 and 2 for each row.
 
 
-
 ### Vector processing and statistics across columns of single row
 
 There are few built in functions to process vectors or ranges of columns.
@@ -843,7 +842,16 @@ There are few built in functions to process vectors or ranges of columns.
 kolumny "file1.txt" using ~x:=2...11 ":sum(x)/len(x)" ":max(x)"
 ```
 
-will show average and maximal value of columns 2 to 11 for each row.
+Will show average and maximal value of columns 2 to 11 for each row.
+
+The upper range can also be a negative number, in which case it counts from the end
+of the all columns in the file (with `-1` meaning last column):
+
+```
+kolumny "file1.txt" using ~x:=2...-1 ":avg(x)"
+```
+
+Will show average of columns from 2 to the last one.
 
 Available vector processing functions:
 
