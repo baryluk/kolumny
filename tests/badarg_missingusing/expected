@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "../../kolumny", line xxx, in <module>
+    using = arguments[argument_i]
+IndexError: list index out of range

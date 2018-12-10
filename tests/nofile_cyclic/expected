@@ -3,5 +3,5 @@ Traceback (most recent call last):
   File "../../kolumny", line xxx, in <module>
     for row in kk:
   File "../../kolumny", line xxx, in go
-    raise NameError("unresolved dependencies in variable")
-NameError: unresolved dependencies in variable
+    raise NameError("unresolved dependencies in variable or unknown function called")
+NameError: unresolved dependencies in variable or unknown function called
