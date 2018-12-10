@@ -977,14 +977,14 @@ kolumny \
 	--begin 'maximum1=float("-inf")' \
 	--begin 'maximum2=float("-inf")' \
 	"file1" using 1,v1:=4,~v2:=5 \
-	":maximum1=max(maximum1,v1)" \
-	":~maximum2=max(maximum2,v2)" \
-	--end   'print "MAX: %f %f" % (maximum1, maximum2)'
+	":maximum1=max(maximum1, v1)" \
+	":~maximum2=max(maximum2, v2)" \
+	--end   'print("MAX: %f %f" % (maximum1, maximum2))'
 ```
 
-Will output 3 columns from file "file1" (column 1, 2 and accumulated maximal
-value of column 4). At the end it will additionally print maximal values of the
-4th and 5th column.
+Will output 3 columns from file "file1" (column 1, 4 and so far accumulated
+maximal value of column 5). At the end it will additionally print maximal values
+of the 4th and 5th column.
 
 
 ### Empty file name `""`
