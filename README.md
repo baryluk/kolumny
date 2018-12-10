@@ -503,12 +503,6 @@ kolumny "file.dat" using ~a:=1,~b:=2 :~s:=a+b :~z:=s**2 :z
 Will output only single column, a square of the sum of first and second column
 from the `file.dat`.
 
-```
-kolumny "file.dat" using `~1,2,~5`
-```
-
-Will only output column 2. The input file must have at least 5 columns in each
-row tho, and columns 1, 2 and 5 must contain numbers.
 
 ```
 kolumny "file1.dat" using `~x:=2` \
@@ -517,6 +511,16 @@ kolumny "file1.dat" using `~x:=2` \
 ```
 
 Will only output one column that is a sum of column two from both input files.
+
+This form is NOT supported currently:
+
+```
+kolumny "file.dat" using `~1,2,~5`
+```
+
+It will emit an error, but in principle it would only output column number 2. The
+input file must have at least 5 columns in each row tho, and columns 1, 2 and 5
+must contain numbers.
 
 
 ### Vectors and column ranges
