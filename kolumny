@@ -88,6 +88,7 @@ def stddev(l):
 	s = sum(map(lambda x: (x - m)**2, l)) / (len(l)-1)
 	return sqrt(s)
 
+from functools import reduce
 
 files = []
 variables = {}
@@ -101,6 +102,8 @@ argument_i = 1
 my_name = arguments[0]
 
 number_of_files = 0
+
+import random
 
 if len(arguments) == 1:
 	print usage
@@ -121,10 +124,12 @@ while argument_i < len(arguments):
 		e = arguments[argument_i]
 		argument_i += 1
 		eval(e, globals())
+		continue
 	elif e == "--import":
 		e = arguments[argument_i]
 		argument_i += 1
 		__import__(e)
+		continue
 	elif len(e) >= 1 and e[0] == ':':
 		action["type"] = "expression"
 		e = e[1:]
@@ -514,7 +519,7 @@ def go():
 		
 		if need_more and not progress:
 			print >> sys.stderr, "Unresolved dependency in expression '%s'" % (need_expr)
-			raise NameError("unresolved dependencies in variable")
+			raise NameError("unresolved dependencies in variable or unknown function called")
 		
 		# emit row with values to be printed
 		yield row
