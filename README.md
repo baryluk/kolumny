@@ -336,7 +336,7 @@ Will output 4 columns: column 1, 4, 3 and 1 (in this order) from file `data.txt`
 In this respect it is similar to this usage of `awk`:
 
 ```
-awk '{ print $1, $3, $4; }' data.txt
+awk '{ print $1, $4, $3, $1; }' data.txt
 ```
 
 But the main benefit over `awk` is ability to process many files at the same time
