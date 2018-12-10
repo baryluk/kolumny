@@ -526,7 +526,7 @@ must contain numbers.
 ### Vectors and column ranges
 
 It is possible to read range of columns (specified with `...`) as a vector that
-can later used in expressions.
+can later be used in expressions.
 
 
 ```
@@ -538,13 +538,13 @@ columns 2...8.
 
 
 ```
-kolumny "file.dat" using 1,~c=2...4 ":c[2-2]+c[3-2]+c[4-2]"
+kolumny "file.dat" using 1,~c:=2...4 ":c[2-2]+c[3-2]+c[4-2]"
 ```
 
 or
 
 ```
-kolumny "file.dat" using 1,~c=2...4 ":c[0]+c[1]+c[2]"
+kolumny "file.dat" using 1,~c:=2...4 ":c[0]+c[1]+c[2]"
 ```
 
 Same as above. Note that indexing of `c` starts from 0 just like in Python.
@@ -554,7 +554,7 @@ Same as above. Note that indexing of `c` starts from 0 just like in Python.
 Vector inputs can be overlapping and assigned to different variables arbitrarily:
 
 ```
-kolumny "file.dat" using 1,~a=2...10,b=5...15 ":sum(a) / sum(b)"
+kolumny "file.dat" using 1,~a:=2...10,b:=5...15 ":sum(a) / sum(b)"
 ```
 
 
@@ -695,6 +695,7 @@ Additional functions:
  * `avg`, `stddev`
  * `eq`
  * `vec_add`
+ * `min`, `max`, `count`
 
 Numbers can have underscores for grouping, for example: `12_345`,
 `1.131_411e+33`.
@@ -716,8 +717,8 @@ Other Python operators, data types and functions are available, but are not
 guaranteed to work in the future new major versions of `kolumny`. For these
 reasons try to keep any custom complex processing to minimum. Including use of
 `map`, `filter`, `reduce`, `zip` and custom `lambda` expressions. But these are
-useful in many applications, and makes `kolumny` extremally powerful tool tool,
-so use your good judgment.
+useful in many applications, and makes `kolumny` extremally powerful tool, so use
+your good judgment.
 
 Note: Array/vector concatenation operator (`+`) is not guaranteed to work in
 future new major versions of `kolumny`.
@@ -767,7 +768,7 @@ As seen previously, expressions can use variables defined by other expressions o
 `using` variables.
 
 ```
-kolumny "file.txt" using "a:=1,b:=(column(2)+column(3)" \
+kolumny "file.txt" using "a:=1,b:=(column(2)+column(3))" \
 	":~x:=a/b"
 	":~y:=b/a"
 	":x+y"
@@ -829,7 +830,9 @@ columns 1 and 2 for each row.
 
 There are few built in functions to process vectors or ranges of columns.
 
-```kolumny "file1.txt" using ~x:=2...11 ":sum(x)/len(x)" ":max(x)"
+```
+kolumny "file1.txt" using ~x:=2...11 ":sum(x)/len(x)" ":max(x)"
+```
 
 will show average and maximal value of columns 2 to 11 for each row.
 
