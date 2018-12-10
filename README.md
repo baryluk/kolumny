@@ -979,6 +979,79 @@ TODO(baryluk): Add a feature, to allow continuing processing until all input
 files finish, and use implicit column values for already finished files.
 
 
+### Complex numbers
+
+`1j` an imaginary unit. Example of complex number: `3+4j`.
+
+When reading data, one can easily create complex numbers and use them in
+expressions:
+
+```
+kolumny "data1.txt" u z:=(column(1)+1j*column(2)) ":z**2
+```
+
+Will form a complex number from real and imaginary part from column 1 and 2,
+display this complex number (like this `(1.2+3.4j)`), and its square.
+
+Standard mathematical functions with support for complex arguments can be
+accessed via cmath module using `--import` option (see [Importing Python
+modules](#importing-python-modules) section for details).
+
+
+### Custom initalization
+
+Arbitrary Python code can be executed on the start of the `kolumny` with the use
+of `--begin` options, and the results of these execution can be used in
+processing stages:
+
+```
+kolumny --begin a=3 "file1.txt" u ~x:=1 ":x*a"
+```
+
+or
+
+```
+kolumny --begin a=3 "file1.txt" u "(a*column(1))"
+```
+
+Will both output first column multiplied by a constant `a`, which is equal to 3.
+
+Multiple `--begin` can be specified, and they will be executed in order:
+
+```
+kolumny --begin a=3 --begin a=a*a "file1.txt" u "(a*column(1))"
+```
+
+Will output first column multiplied by 9.
+
+One can also use semicolons and comments, as in normal Python code:
+
+```
+kolumny --begin "a=3; b=4 # Init" "file1.txt" u "(a*column(1)+b)"
+```
+
+Or use statments with side effect:
+
+```
+kolumny --begin "print('Processing...')" "file1.txt" u 1
+```
+
+This feature might be useful with ability to modify global variables defined by
+`--begin` in expressions:
+
+```
+kolumny --begin "a=0.0" "file1.txt" u "~x:=1" ":x" ":~a+=x" ":a"
+```
+
+Will output two columns. First a copy from the input, and second with a running
+(cummulative) sum of the first one.
+
+
+### Importing Python modules
+
+Arbitrary Python modules can be imported to be used in expressions.
+
+
 ### Accumulators and other statistical operations across rows
 
 ```
@@ -1207,7 +1280,37 @@ kolumny \
 
 Perform some fitting and plotting on multiple files.
 
+
 ### Performance
+
+`kolumny` can process about 450000 lines per second on modern desktop class CPU,
+when using only simple features, and processing files only with few columns.
+
+When using more complex processing, complex expressions, vectors and dozens of
+total columns (across all files), this will usually drop to about 25000-50000
+lines per second in practical scenarios.
+
+So, having each file with 500 rows of data, one can process about 50-100 files
+per second. Just an example.
+
+The memory usage shouldn't exceed few megabytes, even when processing extremally
+large files (~10 gigabytes and more).
+
+There is plenty of room for performance improvements in `kolumny`, and it is
+belived it can process more than 1 million lines per second with suitable
+optimizations, without switching to other programming language.
+
+`kolumny` is single threaded, and will only use at most one CPU core on your
+processor. If you are processing massive amounts of data, either split input
+data into multiple smaller files and process them in parallel, and then join
+ them back using `cat`. Or if you are processing many data sets to begin
+with, that take hours to process, process them in parallel instead. Good
+tool for doing so is [GNU parallel](https://www.gnu.org/software/parallel/),
+`xargs`, `make`, `fine -exec`, or simply `&` operator in shell, for small
+number of files. See
+[parallel alternative](https://www.gnu.org/software/parallel/parallel_alternatives.html#DIFFERENCES-BETWEEN-pyargs-AND-GNU-Parallel)
+for some more (but not all) alternatives (be aware of possible bias in this
+document, as it is written by GNU parallel developers)
 
 
 ### Crazy
