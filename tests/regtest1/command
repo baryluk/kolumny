@@ -1,0 +1,1 @@
+#${KOLUMNY} "test.dat" s 19 u ~dl1:=1,~Deltatemp:=2 ":check(dl1==dl2)" ":int(dl1)"

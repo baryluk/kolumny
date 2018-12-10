@@ -99,6 +99,8 @@ actions = []
 arguments = sys.argv
 argument_i = 1
 
+local_variables = {}
+
 my_name = arguments[0]
 
 number_of_files = 0
@@ -123,12 +125,13 @@ while argument_i < len(arguments):
 	if e == "--begin":
 		e = arguments[argument_i]
 		argument_i += 1
-		eval(e, globals())
+		# eval(e, globals())
+		exec e in globals(), local_variables
 		continue
 	elif e == "--import":
 		e = arguments[argument_i]
 		argument_i += 1
-		__import__(e)
+		local_variables[e] = __import__(e)
 		continue
 	elif len(e) >= 1 and e[0] == ':':
 		action["type"] = "expression"
@@ -187,7 +190,8 @@ while argument_i < len(arguments):
 			if e == "-":
 				action["file_type"] = "stdin"
 				if not commented:
-					plik = sys.stdin # TODO: support multiple usage of "-", and ""
+					# TODO(baryluk): support multiple usage of "-", and ""
+					plik = sys.stdin
 			else:
 				action["file_type"] = "file"
 				if e == "":
@@ -261,9 +265,10 @@ while argument_i < len(arguments):
 						elif len(columns_spec) == 2:
 							c_left, c_right = columns_spec
 							c_left = int(c_left)
-							# TODO: support 'length' as c_right
+							# TODO(baryluk): support 'length' as c_right
 							c_right = int(c_right)
-							if c_left > c_right:
+							# if c_left > c_right:
+							if c_right >= 1 and c_left > c_right:
 								raise NameError("error in columns spec, first column cant be after last column used")
 							cc = (c_left, c_right)
 							typ = "vector"
@@ -295,7 +300,7 @@ while argument_i < len(arguments):
 							i += 1
 				else:
 					raise NameError("positive skip needed")
-					# TODO: for negative skip, we skip last 'skip' lines
+					# TODO(baryluk): for negative skip, we skip last 'skip' lines
 					# we can't generally scan file twice (i.e. stdin), so we can't know how many lines there is
 					# so we need to remember skip+1 lines in the memory
 			#elif next == "F" or next == "field_separator":
@@ -347,11 +352,10 @@ def go():
 										v = float(l[c-1])
 										current_variables[var] = v
 									elif u["type"] == "vector":
-										v = []
 										c_left, c_right = c
-										for ci in xrange(c_left, c_right+1):
-											vi = float(l[ci-1])
-											v.append(vi)
+										if c_right < 0:
+											c_right = len(l) + c_right
+										v = map(float, l[c_left-1 : c_right + 1])
 										current_variables[var] = v
 									elif u["type"] == "python-expression":
 										def is_valid_float(x):
@@ -374,8 +378,9 @@ def go():
 											"column": column_function,
 											"valid": is_valid_float,
 										}
+										local_variables.update(available_locals)
 										try:
-											v = eval(c, globals(), available_locals)
+											v = eval(c, globals(), local_variables)
 											current_variables[var] = v
 										except:
 											print >> sys.stderr, "%s: output line %d: error procesing file '%s' when evaluating python-expression '%s' in using in phase1" % (my_name, line_number, a["file_name"], c)
@@ -430,15 +435,16 @@ def go():
 									if u["not_print"]:
 										continue
 									else:
-										# TODO: if it was stored in variable, just use variable, and not parse again
+										# TODO(baryluk): If it was stored in variable, just use variable, and not parse again
 										c = u["columns"]
 										if u["type"] == "scalar":
 											v = float(l[c-1])
 											row.append(v)
 										elif u["type"] == "vector":
-											#v = []
 											c_left, c_right = c
-											for ci in xrange(c_left, c_right+1):
+											if c_right < 0:
+												c_right = len(l) + c_right
+											for ci in range(c_left, c_right+1):
 												vi = float(l[ci-1])
 												row.append(vi)
 										elif u["type"] == "python-expression":
@@ -462,8 +468,9 @@ def go():
 												"column": column_function,
 												"valid": is_valid_float,
 											}
+											local_variables.update(available_locals)
 											try:
-												v = eval(c, globals(), available_locals)
+												v = eval(c, globals(), local_variables)
 												row.append(v)
 											except:
 												print >> sys.stderr, "%s: output line %d: error procesing file '%s' when evaluating python-expression '%s' in using in phase2" % (my_name, line_number, a["file_name"], c)
@@ -485,12 +492,18 @@ def go():
 						if not ec:
 							expr = a["expression_expr"]
 							try:
-								v = eval(expr, globals(), current_variables)
-							except NameError:
+								# Perform merging of local_variables and current_variables
+								# TODO(baryluk): get rid of current_variables entrirely somehow. Detect collisions
+								used_variables = local_variables.copy()
+								used_variables.update(current_variables)
+								v = eval(expr, globals(), used_variables)
+							except NameError as e:
+								# print >> sys.stderr, "Error evaling, error was NameError:", e
 								need_more = True
 								need_expr = expr
 								continue
-							except ValueError:
+							except ValueError as e:
+								# print >> sys.stderr, "Error evaling, error was ValueError:", e
 								v = float("nan")
 							var = a["expression_variable"]
 							if var:

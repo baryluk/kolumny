@@ -1,0 +1,1 @@
+${KOLUMNY} --import cmath "../input1.txt" u "1,~x:=2,~y:=3" ":~z:=x+1j*y" ":cmath.acos(z)" ":cmath.phase(z)"

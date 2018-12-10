@@ -1,0 +1,1 @@
+${KOLUMNY} --begin "a=0.0" "../input1.txt" u ~x:=1 ":x" ":~a:=a+x" ":a"

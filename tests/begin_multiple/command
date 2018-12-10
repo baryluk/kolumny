@@ -1,0 +1,1 @@
+${KOLUMNY} --begin "print('START')" --begin "a=7" --begin "f=lambda x: x**3" "../input1.txt" u x:=1 ":f(x)" ":a*x"

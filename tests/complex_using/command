@@ -1,1 +1,1 @@
-${KOLUMNY} "../input1.txt" using "1,(column(2)+column(3))"
+${KOLUMNY} "../input1.txt" using "1,~z:=(column(2)+1j*column(3))" ":z" ":z**3"

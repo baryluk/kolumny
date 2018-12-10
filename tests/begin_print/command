@@ -1,0 +1,1 @@
+${KOLUMNY} --begin "print('START')" "../input1.txt" u 1

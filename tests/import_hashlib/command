@@ -1,0 +1,1 @@
+${KOLUMNY} --import hashlib "../input1.txt" using "x:=1...3" ":hashlib.sha256(str(x)).hexdigest()"

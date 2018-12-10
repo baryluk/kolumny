@@ -1,0 +1,1 @@
+${KOLUMNY} --import decimal "../input1.txt" using "~x:=1" ":decimal.Decimal(1000*x) / decimal.Decimal(3)"

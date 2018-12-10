@@ -1,0 +1,1 @@
+${KOLUMNY} --begin "a=3" "../input1.txt" u x:=1 ":a*x"

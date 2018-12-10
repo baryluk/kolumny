@@ -6,7 +6,7 @@ Traceback (most recent call last):
   File "../../kolumny", line xxx, in <module>
     for row in kk:
   File "../../kolumny", line xxx, in go
-    v = eval(c, globals(), available_locals)
+    v = eval(c, globals(), local_variables)
   File "<string>", line 1, in <module>
   File "../../kolumny", line xxx, in column_function
     raise NameError("trying to access invalid column number %d in file '%s' line %d, only %d columns available" % (x, a["file_name"], a["current_line_number"], len(l)))
